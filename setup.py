@@ -1,0 +1,25 @@
+from setuptools import setup
+
+setup(name='PoNos',
+      version='0.1.0',
+      description='PoNoS - POlyak NOnmonotone Stochastic line search',
+      url='github.com/leonardogalli91/PoNoS.git',
+      maintainer='Leonardo Galli',
+      maintainer_email='leonardogalli2@gmail.com',
+      license='MIT',
+      packages=['ponos'],
+      zip_safe=False,
+      install_requires=[
+        'numpy>=0.0',
+        'pandas>=0.0',
+        'Pillow>=0.0',
+        'scikit-image>=0.0',
+        'scikit-learn>=0.0',
+        'scipy>=0.0',
+        'scikit-learn>=0.0',
+        'torch>=0.0',
+        'torchvision>=0.0',
+        'haven-ai>=0.0',
+        'wandb>=0.0',
+        'efficientnet_pytorch>=0.0'
+      ]),
