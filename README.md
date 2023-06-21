@@ -4,7 +4,7 @@ The first nonmonotone stochastic line search for training over-parameterized mod
 
 ### 1. Installation
 
-`extract this archive`
+`pip install git+https:github.com/leonardogalli91/PoNoS.git`
 
 ### 2. Requirements
 
@@ -28,7 +28,7 @@ from that file it is possible to customize thoroughly the experiment.
 
 ### 4. Plot Results
 
-First set the variable ```savedir_base``` to point at the root directory where you saved the results, then run
+In the file ```plot.py``` set the variable ```savedir_base``` to point at the root directory where you saved the results, then run
 
 `python plot.py -p mnist_mlp`
 
