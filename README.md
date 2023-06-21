@@ -6,9 +6,10 @@ The first nonmonotone stochastic line search for training over-parameterized mod
 
 `pip install git+https:github.com/leonardogalli91/PoNoS.git`
 
-### 2. Requirements
+or 
 
 ```
+git clone git@github.com:leonardogalli91/PoNoS.git
 pip install -r requirements.txt
 ```
 
