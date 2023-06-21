@@ -1,1 +1,12 @@
+numpy>=0.0
+pandas>=0.0
+Pillow>=0.0
+scikit-image>=0.0
+scikit-learn>=0.0
+scipy>=0.0
+scikit-learn>=0.0
+torch>=0.0
+torchvision>=0.0
 haven-ai>=0.0
+wandb>=0.0
+efficientnet_pytorch>=0.0

@@ -1,22 +1,30 @@
 import torch
-
 from torch import nn
 from torch.nn import functional as F
 import math
 
+from efficientnet_pytorch import EfficientNet
+from .base_networks import wrn
 
-def get_model(model_name, train_set=None):
-    if model_name == "linear":
-        model = LinearRegression(input_dim=train_set[0][0].shape[0], output_dim=1)
+from src.transformer_utils.transformer import TransformerEncoderModel, weights_init
+from src.transformer_utils.transformer_xl import MemTransformerLM
+
+
+def get_model(model_name, train_set=None, model_args=None, features_dim=None):
+    if model_name in ["softmax"]:
+        model = Mlp_model(input_size=train_set[0][0].shape[0], hidden_sizes=[], n_classes=2, bias=False)
+
+    if model_name in ["linear", "logistic"]:
+        model = LinearRegression(input_dim=train_set[0][0].shape[0], output_dim=1, bias=False)
 
     if model_name == "mlp":
         model = Mlp(n_classes=10, dropout=False)
-    
-    if model_name == "mlp_dropout":
-        model = Mlp(n_classes=10, dropout=True)
 
     elif model_name == "resnet34":
         model = ResNet([3, 4, 6, 3], num_classes=10)
+
+    elif model_name == "efficientnet-b1":
+        model = EfficientNet.from_name('efficientnet-b1', num_classes=10, in_channels=1)
 
     elif model_name == "resnet34_100":
         model = ResNet([3, 4, 6, 3], num_classes=100)
@@ -27,16 +35,32 @@ def get_model(model_name, train_set=None):
     elif model_name == "densenet121_100":
         model = DenseNet121(num_classes=100)
 
-    elif model_name == "matrix_fac_1":
-        model = LinearNetwork(6, [1], 10, bias=False)
-    elif model_name == "matrix_fac_4":
-        model = LinearNetwork(6, [4], 10, bias=False)
-    
-    elif model_name == "matrix_fac_10":
-        model = LinearNetwork(6, [10], 10, bias=False)
+    elif model_name == "wrn_10":
+        model = wrn.WideResNet(depth=28, num_classes=10)
 
-    elif model_name == "linear_fac":
-        model = LinearNetwork(6, [], 10, bias=False)
+    elif model_name == "transformer_encoder":
+        model = TransformerEncoderModel(features_dim, 200, 2, 200, 2, 0.2)
+        model.apply(weights_init)
+
+    elif model_name == "transformer_xl":
+        model = MemTransformerLM(
+            features_dim,
+            model_args["n_layer"],
+            model_args["n_head"],
+            model_args["d_model"],
+            model_args["d_head"],
+            model_args["d_inner"],
+            model_args["dropout"],
+            model_args["dropatt"],
+            tie_weight=False,
+            d_embed=model_args["d_model"],
+            tgt_len=model_args["tgt_len"],
+            ext_len=0,
+            mem_len=model_args["mem_len"],
+            same_length=False,
+        )
+        model.apply(weights_init)
+        model.word_emb.apply(weights_init)
 
     return model
 
@@ -82,12 +106,31 @@ class LinearNetwork(nn.Module):
 
         return logits
 
+def Mlp_model(input_size=784, hidden_sizes=[512, 256], n_classes=10, bias=True, dropout=False):
+    modules = []
+    if len(hidden_sizes) == 0:
+        modules.append(nn.Linear(input_size, n_classes, bias=bias))
+    else:
+        for i, layer in enumerate(hidden_sizes):
+            if i == 0:
+                modules.append(nn.Linear(input_size, layer, bias=bias))
+            else:
+                modules.append(nn.Linear(hidden_sizes[i-1], layer, bias=bias))
+
+            modules.append(nn.ReLU())
+            if dropout:
+                modules.append(nn.Dropout(p=0.5))
+
+        modules.append(nn.Linear(hidden_sizes[-1], n_classes, bias=bias))
+
+    return nn.Sequential(*modules)
+
 # =====================================================
 # Logistic
 class LinearRegression(torch.nn.Module):
-    def __init__(self, input_dim, output_dim):
+    def __init__(self, input_dim, output_dim, bias):
         super().__init__()
-        self.linear = torch.nn.Linear(input_dim, output_dim, bias=False)
+        self.linear = torch.nn.Linear(input_dim, output_dim, bias=bias)
 
     def forward(self, x):
         outputs = self.linear(x)
@@ -121,6 +164,9 @@ class Mlp(nn.Module):
         logits = self.output_layer(out)
 
         return logits
+
+    def n_params(self):
+        return sum(p.numel() for p in self.parameters())
 
 # =====================================================
 # ResNet
@@ -158,6 +204,8 @@ class ResNet(nn.Module):
         out = self.linear(out)
         return out
 
+    def n_params(self):
+        return sum(p.numel() for p in self.parameters())
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -192,7 +240,6 @@ class BasicBlock(nn.Module):
         out += self.shortcut(x)
         out = F.relu(out)
         return out
-
 
 class Bottleneck(nn.Module):
     expansion = 4
@@ -308,24 +355,12 @@ class DenseNet(nn.Module):
         out = self.linear(out)
         return out
 
+    def n_params(self):
+        return sum(p.numel() for p in self.parameters())
+
+
 def DenseNet121(num_classes):
     return DenseNet(Bottleneck_DenseNet, [6,12,24,16], growth_rate=32,
         num_classes=num_classes)
 
-def DenseNet169():
-    return DenseNet(Bottleneck_DenseNet, [6,12,32,32], growth_rate=32)
 
-def DenseNet201():
-    return DenseNet(Bottleneck_DenseNet, [6,12,48,32], growth_rate=32)
-
-def DenseNet161():
-    return DenseNet(Bottleneck_DenseNet, [6,12,36,24], growth_rate=48)
-
-def densenet_cifar():
-    return DenseNet(Bottleneck_DenseNet, [6,12,24,16], growth_rate=12)
-
-def test():
-    net = densenet_cifar()
-    x = torch.randn(1,3,32,32)
-    y = net(x)
-    print(y)

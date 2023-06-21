@@ -1,48 +1,42 @@
 import copy
 import time
-
+import numpy as np
 from . import utils as ut
 from .stoch_line_search import StochLineSearch
 
 
-class Sls(StochLineSearch):
+class SlsPolyak(StochLineSearch):
     """
     Arguments:
-        params (iterable): iterable of parameters to optimize or dicts defining
-            parameter groups
-        n_batches_per_epoch (int, recommended):: the number batches in an epoch
-        init_step_size (float, optional): initial step size (default: 1)
-        c (float, optional): armijo condition constant (default: 0.1)
-        gamma (float, optional): factor used by Armijo for scaling the step-size at each line-search step (default: 2.0)
-        reset_option (float, optional): sets the rest option strategy (default: 1)
-        line_search_fn (float, optional): the condition used by the line-search to find the 
-                    step-size (default: Armijo)
+
     """
 
     def __init__(self,
                  params,
                  n_batches_per_epoch=500,
                  train_set_len=60000,
-                 init_step_size=1,
                  c=0.1,
+                 c_step=0.2,
                  beta_b=0.9,
-                 gamma=2.0,
-                 reset_option=1,
                  line_search_fn="armijo",
                  NM_window=10,
-                 eta_max=10,
+                 max_eta=10,
+                 averaging_mode=0,
+                 f_star=0,
+                 do_line_search=True,
                  zhang_eta=1,
                  sls_every=1,
-                 c_p=0.1,
                  debug_mode=False):
         params = list(params)
-        super().__init__(params, n_batches_per_epoch=n_batches_per_epoch, train_set_len=train_set_len,
-                         init_step_size=init_step_size, c=c, beta_b=beta_b, gamma=gamma, reset_option=reset_option,
-                         line_search_fn=line_search_fn, NM_window=NM_window, zhang_eta=zhang_eta,
-                         debug_mode=debug_mode)
+        super().__init__(params, n_batches_per_epoch=n_batches_per_epoch, train_set_len=train_set_len, c=c,
+                         beta_b=beta_b, line_search_fn=line_search_fn, NM_window=NM_window,
+                         zhang_eta=zhang_eta, debug_mode=debug_mode)
+        self.max_eta = max_eta
+        self.c_step = c_step
+        self.do_line_search = do_line_search
+        self.averaging_mode = averaging_mode
+        self.f_star = f_star
         self.sls_every = sls_every
-        self.eta_max = eta_max
-        self.c_p = c_p
 
 
     def step(self, closure, closure_single):
@@ -77,15 +71,25 @@ class Sls(StochLineSearch):
             self.state["all_sharp"].append(self.compute_sharp(self.params, params_current, grad_current, grad_norm, loss, closure_deterministic))
 
         if self.state["step"] % self.sls_every == 0:
-            step_size = ut.reset_step(step_size=self.state.get('step_size') or self.init_step_size,
-                                      n_batches_per_epoch=self.n_batches_per_epoch,
-                                      gamma=self.gamma,
-                                      reset_option=self.reset_option,
-                                      init_step_size=self.init_step_size,
-                                      max_value=self.eta_max, grad_norm=grad_norm, grad_norm_old=self.state.get("grad_norm"),
-                                      suff_dec=self.state.get("sufficient_dec"), c_p=self.c_p)
+            polyak_step_size = loss / (self.c_step * grad_norm**2 + 1e-8)
+            if self.averaging_mode == 13:
+                step_size = polyak_step_size * (self.beta_b**self.lk)
+            elif self.averaging_mode == 2000:
+                coeff = self.gamma ** (1. / self.n_batches_per_epoch)
+                step_size = min(polyak_step_size.item(), coeff * (self.state.get('step_size') or self.init_step_size))
+            else:
+                step_size = polyak_step_size
+
+            eta_min = 1e-06
+            step_size = max(min(step_size, self.max_eta), eta_min)
+
+            if step_size == self.max_eta:
+                self.state["special_count"] += (1/np.ceil(self.n_batches_per_epoch))
             saved_step = ut.maybe_torch(step_size)
-            step_size, loss_next = self.line_search(step_size, params_current, grad_current, loss, closure_deterministic, grad_norm, indexes)
+            if self.do_line_search:
+                step_size, loss_next = self.line_search(step_size, params_current, grad_current, loss, closure_deterministic, grad_norm, indexes)
+            else:
+                step_size, loss_next = self.step_with_no_line_search(step_size, params_current, grad_current, loss)
         else:
             step_size, loss_next = self.step_with_no_line_search(self.state["step_size"], params_current, grad_current, loss)
             saved_step = ut.maybe_torch(step_size)
