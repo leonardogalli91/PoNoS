@@ -13,13 +13,13 @@ git clone git@github.com:leonardogalli91/PoNoS.git
 pip install -r requirements.txt
 ```
 
-### 3. Experiments
+### 2. Experiments
 
-#### 3.1 Dataset
+#### 2.1 Dataset
 
 Set to ```True``` the options ```download``` in the file ```src/datasets.py```
 
-#### 3.2 Launching experiments
+#### 2.2 Launching experiments
 
 `python trainval.py -e mnist_mlp -sb results/mnist_mlp -d data -r 1`
 
@@ -27,7 +27,7 @@ where `-e` is the experiment group, `-sb` is the result directory, and `-d` is t
 The experiment group is referring to the key of the dict ```EXP_GROUPS```, that can be found in the file ```exp_configs.py```,
 from that file it is possible to customize thoroughly the experiment. 
 
-### 4. Plot Results
+### 3. Plot Results
 
 In the file ```plot.py``` set the variable ```savedir_base``` to point at the root directory where you saved the results, then run
 
