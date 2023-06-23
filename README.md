@@ -1,4 +1,4 @@
-## PoNoS - POlyak NOnmonotone Stochastic line search
+## PoNoS - POlyak NOnmonotone Stochastic line search [arXiv](https://arxiv.org/abs/2306.12747)
 
 The first nonmonotone stochastic line search for training over-parameterized models.
 
