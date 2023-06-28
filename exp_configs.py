@@ -9,7 +9,7 @@ ours_opt_list = armijo_list + sls_polyak_list + sls_ada_list
 
 exp1 = [{"beta_b": 0.9, "name": "sgd_armijo", "reset_option": 11}, 
         {"c_step": 0.2, "name": "polyak", "max_eta": 10, "averaging_mode": 2000},
-        {"beta_b": 0.5, "c": 0.5, "c_step": 0.1, "max_eta": 10, "name": "sls_zhangNM_polyak", "averaging_mode": 13}]
+        {"beta_b": 0.5, "c": 0.5, "c_step": 0.1, "max_eta": 10, "name": "sls_zhangNM_polyak", "averaging_mode": 13}] # PoNoS
 
 reset =[{"beta_b": 0.5, "c": 0.5, "c_step": 0.1, "name": "sls_zhangNM_polyak", "averaging_mode": 13},
         {"beta_b": 0.5, "c": 0.5, "c_step": 0.1, "max_eta": 10, "name": "sls_zhangNM_polyak", "averaging_mode": None},
