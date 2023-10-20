@@ -179,3 +179,82 @@ class PoNoS(torch.optim.Optimizer):
         return [p.grad for p in params]
 
 
+#################### example of use of PoNoS ######################
+
+
+if __name__ == '__main__':
+
+    import torchvision
+    from torch import nn
+    from torch.nn import functional as F
+
+    class Mlp(nn.Module):
+        def __init__(self, input_size=784,
+                     hidden_sizes=[512, 256],
+                     n_classes=10,
+                     bias=True, dropout=False):
+            super().__init__()
+            self.input_size = input_size
+            self.hidden_layers = nn.ModuleList([nn.Linear(in_size, out_size, bias=bias) for
+                                                in_size, out_size in
+                                                zip([self.input_size] + hidden_sizes[:-1], hidden_sizes)])
+            self.output_layer = nn.Linear(hidden_sizes[-1], n_classes, bias=bias)
+
+        def forward(self, x):
+            x = x.view(-1, self.input_size)
+            out = x
+            for layer in self.hidden_layers:
+                Z = layer(out)
+                out = F.relu(Z)
+
+            logits = self.output_layer(out)
+
+            return logits
+
+        def n_params(self):
+            return sum(p.numel() for p in self.parameters())
+
+    def softmax_loss(model, images, labels, backwards=False):
+        logits = model(images)
+        criterion = torch.nn.CrossEntropyLoss(reduction="mean")
+        loss = criterion(logits, labels.view(-1))
+
+        if backwards and loss.requires_grad:
+            loss.backward()
+
+        return loss
+
+    @torch.no_grad()
+    def compute_metric_on_dataset(model, dataset, device):
+        model.eval()
+        loader =  torch.utils.data.DataLoader(dataset, drop_last=False, batch_size=1024)
+        score_sum = 0.
+        for images, labels in loader:
+            images, labels = images.to(device), labels.to(device)
+            score_sum += softmax_loss(model, images, labels).item() * images.shape[0]
+        score = float(score_sum / len(loader.dataset))
+        return score
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)
+
+    model = Mlp(n_classes=10)
+    model.to(device)
+    opt = PoNoS(params=model.parameters())
+    train_set = torchvision.datasets.MNIST("../data", train=True, download=True,
+                                          transform=torchvision.transforms.Compose([
+                                              torchvision.transforms.ToTensor(),
+                                              torchvision.transforms.Normalize(
+                                                  (0.5,), (0.5,))
+                                          ]))
+
+    for epoch in range(5):
+        train_loader = torch.utils.data.DataLoader(train_set, drop_last=False, shuffle=True, batch_size=128)
+        print(epoch, compute_metric_on_dataset(model, train_set, device))
+
+        model.train()
+        for images, labels in train_loader:
+            images, labels = images.to(device), labels.to(device)
+            opt.zero_grad()
+            closure = lambda: softmax_loss(model, images, labels, backwards=False)
+            opt.step(closure)
