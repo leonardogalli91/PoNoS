@@ -5,7 +5,7 @@ The first nonmonotone stochastic line search for training over-parameterized mod
 ![alt text](img/figure1.png)
 
 
-### O. PoNoS as a ```torch.optim.Optimizer```
+### 0. PoNoS as a ```torch.optim.Optimizer```
 
 The file ```PoNoS.py``` is a self contained class implementing our new algorithm PoNoS as torch.optim.Optimizer.
 This optimizer can be easily integrated in any deep learning pipeline as shown in the example at the end of the file ```PoNoS.py```.
