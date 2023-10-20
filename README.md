@@ -1,6 +1,6 @@
 ## PoNoS - POlyak NOnmonotone Stochastic line search [[arXiv]](https://arxiv.org/abs/2306.12747)
 
-The first nonmonotone stochastic line search for training over-parameterized models.
+The first nonmonotone stochastic line search method training over-parameterized models faster than SGD and Adam.
 
 ![alt text](img/figure1.png)
 
