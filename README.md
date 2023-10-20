@@ -8,7 +8,7 @@ The first nonmonotone stochastic line search method training DL models faster th
 ### 0. PoNoS as a ```torch.optim.Optimizer```
 
 The file ```PoNoS.py``` is a self contained class implementing our new algorithm PoNoS as ```torch.optim.Optimizer```.
-This optimizer can be easily integrated in any deep learning pipeline as shown in the example at the end of the file ```PoNoS.py```. If you are interested instead in reproducing the results and/or in some other features of this repository, you can follow the steps below.
+This optimizer can be easily integrated in any deep learning pipeline as shown in the example at the end of the file ```PoNoS.py```. Instead, if you are interested in reproducing the results of the paper and/or in some other features of this repository, you can follow the steps below.
 
 ### 1. Installation
 
