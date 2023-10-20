@@ -2,6 +2,8 @@
 
 The first nonmonotone stochastic line search for training over-parameterized models.
 
+![alt text](img/figure1.png)
+
 ### 1. Installation
 
 `pip install git+https:github.com/leonardogalli91/PoNoS.git`
