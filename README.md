@@ -1,4 +1,4 @@
-## PoNoS - POlyak NOnmonotone Stochastic line search [[arXiv]](https://arxiv.org/abs/2306.12747)
+## PoNoS - POlyak NOnmonotone Stochastic line search [[arXiv]](https://arxiv.org/abs/2306.12747) [[Poster]](https://neurips.cc/virtual/2023/poster/70368)
 
 The first nonmonotone stochastic line search method training DL models faster than SGD and Adam.
 
