@@ -35,3 +35,13 @@ In the file ```plot.py``` set the variable ```savedir_base``` to point at the ro
 
 
 
+### Citation
+
+```
+@inproceedings{galli2023don,
+	title={Don't be so Monotone: Relaxing Stochastic Line Search in Over-Parameterized Models},
+	author={Galli, Leonardo and Rauhut, Holger and Schmidt, Mark},
+	booktitle={Advances in Neural Information Processing Systems},
+	year={2023}
+}
+```
