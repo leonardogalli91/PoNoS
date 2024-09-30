@@ -1,6 +1,14 @@
-## PoNoS - POlyak NOnmonotone Stochastic line search [[arXiv]](https://arxiv.org/abs/2306.12747)
+## PoNoS - POlyak NOnmonotone Stochastic line search [[arXiv]](https://arxiv.org/abs/2306.12747) [[Poster]](https://neurips.cc/virtual/2023/poster/70368) [[NeurIPS]](https://proceedings.neurips.cc/paper_files/paper/2023/hash/6d0bf1265ea9635fb4f9d56f16d7efb2-Abstract-Conference.html)
 
-The first nonmonotone stochastic line search for training over-parameterized models.
+The first nonmonotone stochastic line search method training DL models faster than SGD and Adam.
+
+![alt text](img/figure1.png)
+
+
+### 0. PoNoS as a ```torch.optim.Optimizer```
+
+The file ```PoNoS.py``` is a self contained class implementing our new algorithm PoNoS as ```torch.optim.Optimizer```.
+This optimizer can be easily integrated in any deep learning pipeline as shown in the example at the end of the file ```PoNoS.py```. Instead, if you are interested in reproducing the results of the paper and/or in some other features of this repository, you can follow the steps below.
 
 ### 1. Installation
 
